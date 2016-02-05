@@ -1,6 +1,7 @@
 package com.demo.magicrecipe;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.webkit.WebViewClient;
 public class RecipeDetailsView extends Activity {
     private WebView webView;
     String mRecipeLink;
+    private ProgressDialog progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,22 +30,24 @@ public class RecipeDetailsView extends Activity {
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
-        settings.setUseWideViewPort(true);
-        settings.setLoadWithOverviewMode(true);
         settings.setLoadsImagesAutomatically(true);
-        settings.setBuiltInZoomControls(true);
-        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
 
         webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        webView.setInitialScale(40);
         webView.setScrollbarFadingEnabled(true);
 
-        webView.loadUrl(mRecipeLink);
 
+        progressBar = ProgressDialog.show(RecipeDetailsView.this, "Magic Recipe", "Loading...");
         webView.setWebViewClient(new WebViewClient() {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
+                view.loadUrl(url);
                 return true;
+            }
+
+            public void onPageFinished(WebView view, String url) {
+                if (progressBar.isShowing()) {
+                    progressBar.dismiss();
+                }
             }
 
             public void onReceivedError(WebView view, int errorCode,
@@ -59,10 +63,13 @@ public class RecipeDetailsView extends Activity {
                                 return;
                             }
                         });
+                alertDialog.setCancelable(true);
+                alertDialog.setCanceledOnTouchOutside(false);
                 alertDialog.show();
             }
 
         });
-    }
 
+        webView.loadUrl(mRecipeLink);
+    }
 }
